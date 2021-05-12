@@ -88,12 +88,18 @@ stimulus_length = 0.2
 stimulus_frames = extract_stim_frames(timestamp_470, stimulus_times, data_470[2])
 stimulus_frames = np.array(stimulus_frames)
 stimulus_average = np.mean(stimulus_frames, axis=0)
+stimulus_std = np.std(stimulus_frames, axis=0)
+stim_std_plus = stimulus_average + stimulus_std
+stim_std_minus = stimulus_average - stimulus_std
 
 random_samples = data_470[2]
 np.random.shuffle(random_samples)
 random_frames = extract_stim_frames(timestamp_470, stimulus_times, random_samples)
 random_frames = np.array(random_frames)
 random_average = np.mean(random_frames, axis=0)
+random_std = np.std(random_frames, axis=0)
+random_std_plus = random_average + random_std
+random_std_minus = random_average - random_std
 
 
 # minimum = min(len(data_415[2]), len(data_470[2]))
@@ -105,13 +111,20 @@ sampling_freq = 20
 # x_coords = np.linspace(0, minimum/sampling_freq, minimum)
 x_coords = np.linspace(0, len(stimulus_average)/sampling_freq, len(stimulus_average))
 
-plt.plot(x_coords, stimulus_average, label='recorded\ndata')
-plt.plot(x_coords, random_average, 'red', label='randomized\ndata')
+plt.plot(x_coords, stimulus_average, 'b', label='recorded\ndata')
+plt.plot(x_coords, stim_std_plus, 'b:', label='+- std')
+plt.plot(x_coords, stim_std_minus, 'b:')
+plt.plot(x_coords, random_average, 'r', label='randomized\ndata')
+plt.plot(x_coords, random_std_plus, 'r:', label='+-std')
+plt.plot(x_coords, random_std_minus, 'r:')
+plt.axvline(x_coords[1], 0, 0.1, color='g', label='stim times')
+plt.axvline(x_coords[21], 0, 0.1, color='g')
+plt.axvline(x_coords[41], 0, 0.1, color='g')
 # plt.plot(x_coords, plotting_470, label='470nm')
 # plt.plot(x_coords, plotting_415, 'red', label='415nm')
 plt.xlabel('[sec]')
 plt.ylabel('intensity')
 # plt.plot(x, biexponential_decay(x, a, b, c, d, e), 'red', label='fitted')
-plt.legend(loc='upper right', bbox_to_anchor=(0.85, 0.95))
+plt.legend(loc='upper right', bbox_to_anchor=(0.85, 0.98))
 plt.show()
 
