@@ -24,7 +24,8 @@ def read_photometry_data(photometry_filename):
         flags.append(list_of_rows[row][2])
     for i in range(len(list_of_rows[0])-3):
         for row in range(len(list_of_rows)):
-            data[i].append(list_of_rows[row][i + 3])
+            # data[i].append(list_of_rows[row][i + 3])
+            data[i].append(list_of_rows[row][8])
     for j in range(len(data)):
         for k in range(len(data[j])):
             if k == 0:
@@ -55,15 +56,29 @@ def read_digitalin(digitalin_filename):
     return time
 
 
+def extract_stim_starts(stim_times, sequence_length):
+    block_length = sequence_length * 2
+    stim_starts = []
+    for i in range(0, len(stim_times), block_length):
+        stim_starts.append(stim_times[i])
+        stim_starts.append(stim_times[i+block_length-1])
+    return stim_starts
+
+
 def extract_stim_frames(timestamps, stim_times, data_frames):
     extracted_stim_times = []
     stim_frames = []
-    for i in range(len(stim_times)):
+    extract = True
+
+    for i in range(0, len(stim_times), 2):
         for j in range(len(timestamps)):
-            if j > 0:
-                if timestamps[j-1] < stim_times[i] and timestamps[j] > stim_times[i]:
-                    extracted_stim_times.append(timestamps[j])
-                    stim_frames.append(data_frames[j-22:j+98])
+            if extract and stim_times[i+1] > timestamps[j] > stim_times[i]:
+                extracted_stim_times.append(timestamps[j])
+                stim_frames.append(data_frames[j-5:j+105])
+                extract = False
+            elif not extract and timestamps[j] > stim_times[i+1]:
+                extract = True
+
     # return extracted_stim_times
     return stim_frames
 
@@ -78,29 +93,36 @@ def biexponential_decay(x, a, b, c , d, e):
 
 
 
+laser_seq_length = 25
 
 data_470, timestamp_470 = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_4702022-05-03T19_32_38.csv')
 data_415, timestamp_415 = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_4152022-05-03T19_32_38.csv')
+data_all, timestamp_all = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testratall2022-05-03T19_32_38.csv')
 stimulus_times = read_digitalin(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_laserOn2022-05-03T19_32_37.csv')
 plotting_470 = data_470[2]
 plotting_415 = data_415[2]
+plotting_all = data_all[2]
 
-
+stim_start_times = extract_stim_starts(stimulus_times, laser_seq_length)
 frame_rate = extract_frame_rate(timestamp_470)
 stimulus_length = 0.2
-stimulus_frames = extract_stim_frames(timestamp_470, stimulus_times, data_470[2])
+stimulus_frames = extract_stim_frames(timestamp_470, stim_start_times, data_470[2])
 stimulus_frames = np.array(stimulus_frames)
 stimulus_average = np.mean(stimulus_frames, axis=0)
 stimulus_std = np.std(stimulus_frames, axis=0)
 stim_std_plus = stimulus_average + stimulus_std
 stim_std_minus = stimulus_average - stimulus_std
 
+plt.plot(plotting_all)
+plt.show()
+
 plt.plot(plotting_470)
+plt.plot(plotting_415)
 plt.show()
 
 random_samples = data_470[2]
 np.random.shuffle(random_samples)
-random_frames = extract_stim_frames(timestamp_470, stimulus_times, random_samples)
+random_frames = extract_stim_frames(timestamp_470, stim_start_times, random_samples)
 random_frames = np.array(random_frames)
 random_average = np.mean(random_frames, axis=0)
 random_std = np.std(random_frames, axis=0)
@@ -124,7 +146,7 @@ plt.plot(x_coords, random_average, 'r', label='randomized\ndata')
 plt.plot(x_coords, random_std_plus, 'r:', label='+-std')
 plt.plot(x_coords, random_std_minus, 'r:')
 # plt.axvline(x_coords[1], 0, 0.1, color='g', label='stim times')
-plt.axvline(x_coords[21], 0, 0.1, color='g')
+plt.axvline(x_coords[5], 0, 0.1, color='g')
 # plt.axvline(x_coords[41], 0, 0.1, color='g')
 # plt.plot(x_coords, plotting_470, label='470nm')
 # plt.plot(x_coords, plotting_415, 'red', label='415nm')
