@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import numpy as np
 
-# with open(input()+'.csv', 'r') as file: ezzel konzolosan is be lehet írni, ha a kódot nem kell megnyyitni
+# with open(input()+'.csv', 'r') as file: ezzel konzolosan is be lehet írni, ha a kódot nem kell megnyitni
 
 
 def read_photometry_data(photometry_filename):
@@ -63,7 +63,7 @@ def extract_stim_frames(timestamps, stim_times, data_frames):
             if j > 0:
                 if timestamps[j-1] < stim_times[i] and timestamps[j] > stim_times[i]:
                     extracted_stim_times.append(timestamps[j])
-                    stim_frames.append(data_frames[j-22:j+26])
+                    stim_frames.append(data_frames[j-22:j+98])
     # return extracted_stim_times
     return stim_frames
 
@@ -77,11 +77,14 @@ def biexponential_decay(x, a, b, c , d, e):
     return a * np.exp(-b * x) + c * np.exp(-d * x) + e
 
 
-data_470, timestamp_470 = read_photometry_data(r'D:\phd\data\Photometry\Test\2021.05.07. Stimulus synchronization test\2021_05_07_470_1')
-data_415, timestamp_415 = read_photometry_data(r'D:\phd\data\Photometry\Test\2021.05.07. Stimulus synchronization test\2021_05_07_415_1')
-stimulus_times = read_digitalin(r'd:\phd\data\Photometry\Test\2021.05.07. Stimulus synchronization test\2021_05_07_digitalin_1')
+
+
+data_470, timestamp_470 = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_4702022-05-03T19_32_38.csv')
+data_415, timestamp_415 = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_4152022-05-03T19_32_38.csv')
+stimulus_times = read_digitalin(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_laserOn2022-05-03T19_32_37.csv')
 plotting_470 = data_470[2]
 plotting_415 = data_415[2]
+
 
 frame_rate = extract_frame_rate(timestamp_470)
 stimulus_length = 0.2
@@ -91,6 +94,9 @@ stimulus_average = np.mean(stimulus_frames, axis=0)
 stimulus_std = np.std(stimulus_frames, axis=0)
 stim_std_plus = stimulus_average + stimulus_std
 stim_std_minus = stimulus_average - stimulus_std
+
+plt.plot(plotting_470)
+plt.show()
 
 random_samples = data_470[2]
 np.random.shuffle(random_samples)
@@ -117,9 +123,9 @@ plt.plot(x_coords, stim_std_minus, 'b:')
 plt.plot(x_coords, random_average, 'r', label='randomized\ndata')
 plt.plot(x_coords, random_std_plus, 'r:', label='+-std')
 plt.plot(x_coords, random_std_minus, 'r:')
-plt.axvline(x_coords[1], 0, 0.1, color='g', label='stim times')
+# plt.axvline(x_coords[1], 0, 0.1, color='g', label='stim times')
 plt.axvline(x_coords[21], 0, 0.1, color='g')
-plt.axvline(x_coords[41], 0, 0.1, color='g')
+# plt.axvline(x_coords[41], 0, 0.1, color='g')
 # plt.plot(x_coords, plotting_470, label='470nm')
 # plt.plot(x_coords, plotting_415, 'red', label='415nm')
 plt.xlabel('[sec]')
