@@ -88,17 +88,41 @@ def extract_frame_rate(timestamps):
     return frame_rate
 
 
+def plot_fp_signal(to_plot, title=None):
+    plt.plot(x_coords, to_plot, 'b')  # , label='recorded\ndata'
+    # plt.plot(x_coords, stim_std_plus, 'b:', label='+- std')
+    # plt.plot(x_coords, stim_std_minus, 'b:')
+    # plt.plot(x_coords, random_average, 'r', label='randomized\ndata')
+    # plt.plot(x_coords, random_std_plus, 'r:', label='+-std')
+    # plt.plot(x_coords, random_std_minus, 'r:')
+    # plt.axvline(x_coords[1], 0, 0.1, color='g', label='stim times')
+    plt.axvline(x_coords[5], 0, 0.1, color='g')  # , label='stimulation onset'
+    # plt.axvline(x_coords[41], 0, 0.1, color='g')
+    # plt.plot(x_coords, plotting_470, label='470nm')
+    # plt.plot(x_coords, plotting_415, 'red', label='415nm')
+    plt.xlabel('[sec]')
+    plt.ylabel('intensity')
+    if title is not None:
+        plt.title(title)
+    # plt.plot(x, biexponential_decay(x, a, b, c, d, e), 'red', label='fitted')
+    # plt.legend(loc='upper right', bbox_to_anchor=(0.85, 0.98))
+    plt.show()
+
 def biexponential_decay(x, a, b, c , d, e):
     return a * np.exp(-b * x) + c * np.exp(-d * x) + e
 
 
-
 laser_seq_length = 25
 
-data_470, timestamp_470 = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_4702022-05-03T19_32_38.csv')
-data_415, timestamp_415 = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_4152022-05-03T19_32_38.csv')
-data_all, timestamp_all = read_photometry_data(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testratall2022-05-03T19_32_38.csv')
-stimulus_times = read_digitalin(r'D:\_phd\photometry\2022.05.03_Single fiber and laser test\Testrat_laserOn2022-05-03T19_32_37.csv')
+base_folder = r'G:\Fiber photometry\Data\2022.05.04\\'
+experiment = 'Rno66'
+recording = '2022-05-04T12_51_43'
+recording_laseron = recording[:-2] + str(int(recording[-2:])-1)  # laseron rec always gets timestamp 1 sec earlier than photometry
+
+data_470, timestamp_470 = read_photometry_data(base_folder[:-1] + experiment + '_470_' + recording + '.csv')
+data_415, timestamp_415 = read_photometry_data(base_folder[:-1] + experiment + '_415_' + recording + '.csv')
+data_all, timestamp_all = read_photometry_data(base_folder[:-1] + experiment + '_all_' + recording + '.csv')
+stimulus_times = read_digitalin(base_folder[:-1] + experiment + '_laserOn_' + recording_laseron + '.csv')
 plotting_470 = data_470[2]
 plotting_415 = data_415[2]
 plotting_all = data_all[2]
@@ -139,20 +163,8 @@ sampling_freq = 20
 # x_coords = np.linspace(0, minimum/sampling_freq, minimum)
 x_coords = np.linspace(0, len(stimulus_average)/sampling_freq, len(stimulus_average))
 
-plt.plot(x_coords, stimulus_average, 'b', label='recorded\ndata')
-plt.plot(x_coords, stim_std_plus, 'b:', label='+- std')
-plt.plot(x_coords, stim_std_minus, 'b:')
-plt.plot(x_coords, random_average, 'r', label='randomized\ndata')
-plt.plot(x_coords, random_std_plus, 'r:', label='+-std')
-plt.plot(x_coords, random_std_minus, 'r:')
-# plt.axvline(x_coords[1], 0, 0.1, color='g', label='stim times')
-plt.axvline(x_coords[5], 0, 0.1, color='g')
-# plt.axvline(x_coords[41], 0, 0.1, color='g')
-# plt.plot(x_coords, plotting_470, label='470nm')
-# plt.plot(x_coords, plotting_415, 'red', label='415nm')
-plt.xlabel('[sec]')
-plt.ylabel('intensity')
-# plt.plot(x, biexponential_decay(x, a, b, c, d, e), 'red', label='fitted')
-plt.legend(loc='upper right', bbox_to_anchor=(0.85, 0.98))
-plt.show()
+for a in range(len(stimulus_frames)):
+    plot_fp_signal(stimulus_frames[a])
+
+plot_fp_signal(stimulus_average, "Average signal")
 
